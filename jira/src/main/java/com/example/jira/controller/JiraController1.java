@@ -27,13 +27,15 @@ public class JiraController1 {
     public ResponseEntity<?> createStoryAndSubtasks(
             @RequestPart("featureKey") String featureKey,
             @RequestPart("storyType") String storyType,
+            @RequestPart(name = "storySummary", required = false) String storySummary,
+            @RequestPart(name = "storyDescription", required = false) String storyDescription,
             @RequestPart("file") MultipartFile excelFile) {
 
         try {
             // read task names from excel (FullPLL -> 44, LightPLL -> 11)
             List<String> taskNames = excelService.readTasks(storyType, excelFile);
 
-            Map<String, Object> result = jiraService.createStoryAndSubtasks(featureKey, storyType, taskNames);
+            Map<String, Object> result = jiraService.createStoryAndSubtasks(featureKey, storyType,storySummary, storyDescription, taskNames);
             return ResponseEntity.ok(result);
 
         } catch (Exception e) {

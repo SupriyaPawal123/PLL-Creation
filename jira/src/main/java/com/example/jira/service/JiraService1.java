@@ -122,13 +122,18 @@ public class JiraService1 {
      * High-level operation: create a story under the feature and create multiple subtasks under that story.
      * Returns a map containing newStoryKey and createdSubtaskKeys.
      */
-    public Map<String, Object> createStoryAndSubtasks(String featureKey, String storyType, List<String> taskNames) throws Exception {
+    public Map<String, Object> createStoryAndSubtasks(String featureKey, String storyType, String storyName, String storyDescription, List<String> taskNames) throws Exception {
         // Build summary and description for the new story
-        String summary = "Auto Story for " + featureKey + " - " + storyType ;
-        String description = "Automatically created story (type: " + storyType + ") under feature " + featureKey;
+        String description =  (storyDescription == null || storyDescription.isBlank())
+        ? "Auto Story for " + featureKey + " - " + Instant.now().toString()
+        : storyDescription;
+        
+        String finalSummary = (storyName == null || storyName.isBlank())
+                ? "Auto Story for " + featureKey + " - " + Instant.now().toString()
+                : storyName;
 
         // 1) create story
-        String storyKey = createStory(featureKey, summary, description);
+        String storyKey = createStory(featureKey, finalSummary, description);
 
         // 2) link story <-> feature
         // Using createIssueLink(feature, story) with "Relates" link type so it's visible in issue links.
