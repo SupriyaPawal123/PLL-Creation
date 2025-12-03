@@ -12,7 +12,7 @@ import com.example.jira.service.UserService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/jira/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
