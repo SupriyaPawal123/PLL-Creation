@@ -2,6 +2,8 @@ package com.example.jira.service;
 
 import org.springframework.stereotype.Service;
 
+import com.example.jira.constant.AuthConstants;
+import com.example.jira.dto.AuthResponse;
 import com.example.jira.dto.LoginRequest;
 import com.example.jira.dto.RegisterRequest;
 import com.example.jira.model.User;
@@ -15,9 +17,9 @@ public class UserService
 {
 	private final UserRepository userRepo;
 
-    public String register(RegisterRequest req) {
+    public AuthResponse register(RegisterRequest req) {
         if (userRepo.existsByUsername(req.getUsername())) {
-            return "Username already exists!";
+            return new AuthResponse(AuthConstants.USER_ALREADY_EXISTS, req.getUsername()) ;
         }
 
         User user = new User();
@@ -26,22 +28,22 @@ public class UserService
         user.setRole(req.getRole());
 
         userRepo.save(user);
-        return "User Registered Successfully!";
+        return new AuthResponse(AuthConstants.USER_REGISTERED, req.getUsername()) ;
     }
 
-    public String login(LoginRequest req) {
+    public AuthResponse login(LoginRequest req) {
         User user = userRepo.findByUsername(req.getUsername())
                 .orElse(null);
 
         if (user == null) {
-            return "User not found!";
+             return new AuthResponse(AuthConstants.USER_NOT_FOUND,req.getUsername()) ;
         }
 
         if (!user.getPassword().equals(req.getPassword())) {
-            return "Invalid password!";
+            return new AuthResponse(AuthConstants.INVALID_PASSWORD,req.getUsername()) ;
         }
 
-        return "Login Successful! Role: " + user.getRole();
+        return new AuthResponse(AuthConstants.LOGIN_SUCCESS, req.getUsername());
     }
 
 }
