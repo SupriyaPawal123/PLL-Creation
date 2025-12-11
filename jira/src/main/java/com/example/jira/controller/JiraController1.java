@@ -1,9 +1,10 @@
 package com.example.jira.controller;
 
+import com.example.jira.model.StoryRecordDto;
 import com.example.jira.service.ExcelService;
-import com.example.jira.service.JiraService;
 import com.example.jira.service.JiraService1;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,5 +43,17 @@ public class JiraController1 {
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
+    }
+
+    @GetMapping(value = "/get-story-records")
+    public ResponseEntity<?> getStoryRecords(){
+        List<StoryRecordDto> stories = jiraService.getStoryRecords();
+
+        if (stories == null || stories.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("No story records found.");
+        }
+
+        return ResponseEntity.ok(stories);
     }
 }

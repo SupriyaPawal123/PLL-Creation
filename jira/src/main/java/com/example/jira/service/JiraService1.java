@@ -1,12 +1,15 @@
 package com.example.jira.service;
 
 import com.example.jira.config.JiraConfig;
+import com.example.jira.model.StoryRecordDto;
+import com.example.jira.repo.StoryRecordRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -21,9 +24,13 @@ public class JiraService1 {
     // Issue type ids chosen from your issuetype list
     private static final String STORY_ISSUE_TYPE_ID = "10004"; // Story (scoped to project)
     private static final String SUBTASK_ISSUE_TYPE_ID = "10002"; // Subtask
+    private final StoryRecordService storyRecordService;
+    private StoryRecordRepository storyRecordRepository;
 
-    public JiraService1(JiraConfig config) {
+    public JiraService1(JiraConfig config, StoryRecordService storyRecordService) {
         this.config = config;
+        this.storyRecordService = storyRecordService;
+        this.storyRecordRepository = storyRecordRepository;
     }
 
     private HttpHeaders authHeaders() {
@@ -132,22 +139,26 @@ public class JiraService1 {
                 ? "Auto Story for " + featureKey + " - " + Instant.now().toString()
                 : storyName;
 
-        // 1) create story
+        // 1) create Jira story
         String storyKey = createStory(featureKey, finalSummary, description);
 
-        // 2) link story <-> feature
-        // Using createIssueLink(feature, story) with "Relates" link type so it's visible in issue links.
-        // If you prefer a parent/child hierarchy (specific link type) change the type.name accordingly.
-        createIssueLink(featureKey, storyKey);
-
-        // 3) create subtasks under the story
-        List<String> created = new java.util.ArrayList<>();
+        // 2) create subtasks under the story
+        List<String> createdSubtasks = new ArrayList<>();
         for (String t : taskNames) {
-            String subKey = createSubtask(storyKey, t);
-            created.add(subKey);
+            createdSubtasks.add(createSubtask(storyKey, t));
         }
 
-        return Map.of("storyKey", storyKey, "subtasks", created);
+        // 3) store in SAME TABLE as JSON
+        storyRecordService.saveStory(featureKey, storyKey, createdSubtasks);
+
+        // 4) link
+        createIssueLink(featureKey, storyKey);
+
+        return Map.of("storyKey", storyKey, "subtasks", createdSubtasks);
+    }
+
+    public List<StoryRecordDto> getStoryRecords(){
+        return storyRecordService.getAllStories();
     }
 }
 
