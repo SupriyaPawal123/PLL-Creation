@@ -9,6 +9,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -46,12 +48,17 @@ public class JiraController1 {
     }
 
     @GetMapping(value = "/get-story-records")
-    public ResponseEntity<?> getStoryRecords(){
+    public ResponseEntity<List<StoryRecordDto>> getStoryRecords(){
         List<StoryRecordDto> stories = jiraService.getStoryRecords();
 
-        if (stories == null || stories.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("No story records found.");
+		/*
+		 * if (stories == null || stories.isEmpty()) { return
+		 * ResponseEntity.status(HttpStatus.NOT_FOUND) .body("No story records found.");
+		 * }
+		 */
+
+        if (stories == null) {
+            stories = Collections.emptyList();
         }
 
         return ResponseEntity.ok(stories);
