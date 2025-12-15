@@ -8,6 +8,7 @@ public class AuthConstants {
 	    public static final String LOGIN_SUCCESS = "Login success!";
 	    public static final String INVALID_USERNAME = "Invalid username!";
 	    public static final String INVALID_PASSWORD = "Invalid password!";
-	    public static final String USER_NOT_FOUND ="User not found!";
+	    public static final String USER_NOT_FOUND = "User not found!";
+        public static final String PASSWORD_UPDATED = "Password Updated successfully!";
 
 }

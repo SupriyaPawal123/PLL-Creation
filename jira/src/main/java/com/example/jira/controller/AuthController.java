@@ -2,10 +2,7 @@ package com.example.jira.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.jira.constant.AuthConstants;
 import com.example.jira.dto.AuthResponse;
@@ -46,5 +43,20 @@ public class AuthController {
                 return ResponseEntity.ok(response);
         }
 	    }
-	    
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<AuthResponse> forgotPassword(
+            @RequestParam String username,
+            @RequestParam String newPassword) {
+
+        AuthResponse response = userService.forgotPassword(username, newPassword);
+
+        if (response.getMessage().equals(AuthConstants.USER_NOT_FOUND)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+
 }

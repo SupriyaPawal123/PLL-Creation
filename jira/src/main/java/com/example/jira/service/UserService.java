@@ -46,4 +46,20 @@ public class UserService
         return new AuthResponse(AuthConstants.LOGIN_SUCCESS, req.getUsername());
     }
 
+    public AuthResponse forgotPassword(String username, String newPassword) {
+
+        User user = userRepo.findByUsername(username)
+                .orElse(null);
+
+        if (user == null) {
+            return new AuthResponse(AuthConstants.USER_NOT_FOUND, username);
+        }
+
+        user.setPassword(newPassword);
+        userRepo.save(user);
+
+        return new AuthResponse(AuthConstants.PASSWORD_UPDATED, username);
+    }
+
+
 }
