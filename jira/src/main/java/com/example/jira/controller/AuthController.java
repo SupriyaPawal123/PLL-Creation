@@ -45,11 +45,9 @@ public class AuthController {
 	    }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<AuthResponse> forgotPassword(
-            @RequestParam String username,
-            @RequestParam String newPassword) {
+    public ResponseEntity<AuthResponse> forgotPassword(@RequestBody LoginRequest request) {
 
-        AuthResponse response = userService.forgotPassword(username, newPassword);
+        AuthResponse response = userService.forgotPassword(request);
 
         if (response.getMessage().equals(AuthConstants.USER_NOT_FOUND)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);

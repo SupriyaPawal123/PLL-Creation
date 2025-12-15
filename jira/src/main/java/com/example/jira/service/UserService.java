@@ -46,19 +46,19 @@ public class UserService
         return new AuthResponse(AuthConstants.LOGIN_SUCCESS, req.getUsername());
     }
 
-    public AuthResponse forgotPassword(String username, String newPassword) {
+    public AuthResponse forgotPassword(LoginRequest loginRequest) {
 
-        User user = userRepo.findByUsername(username)
+        User user = userRepo.findByUsername(loginRequest.getUsername())
                 .orElse(null);
 
         if (user == null) {
-            return new AuthResponse(AuthConstants.USER_NOT_FOUND, username);
+            return new AuthResponse(AuthConstants.USER_NOT_FOUND, loginRequest.getUsername());
         }
 
-        user.setPassword(newPassword);
+        user.setPassword(loginRequest.getPassword());
         userRepo.save(user);
 
-        return new AuthResponse(AuthConstants.PASSWORD_UPDATED, username);
+        return new AuthResponse(AuthConstants.PASSWORD_UPDATED, loginRequest.getUsername());
     }
 
 
