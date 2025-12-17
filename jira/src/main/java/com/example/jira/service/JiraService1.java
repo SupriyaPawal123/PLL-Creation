@@ -126,6 +126,51 @@ public class JiraService1 {
     }
 
     /**
+     * Create a subtask under the given storyKey with the provided summary. Returns the created key in single call.
+     */
+    public List<String> createSubtasksInBulk(String parentStoryKey, List<String> taskNames)
+            throws Exception {
+
+        // derive project key from parent (e.g. SCRUM-123 → SCRUM)
+        String projectKey = parentStoryKey.split("-")[0];
+
+        List<Map<String, Object>> issueUpdates = new ArrayList<>();
+
+        for (String taskName : taskNames) {
+            Map<String, Object> fields = Map.of(
+                    "project", Map.of("key", projectKey), // 🔥 REQUIRED
+                    "summary", taskName,
+                    "issuetype", Map.of("id", SUBTASK_ISSUE_TYPE_ID),
+                    "parent", Map.of("key", parentStoryKey)
+            );
+
+            issueUpdates.add(Map.of("fields", fields));
+        }
+
+        Map<String, Object> payload = Map.of("issueUpdates", issueUpdates);
+
+        String json = mapper.writeValueAsString(payload);
+        HttpEntity<String> req = new HttpEntity<>(json, authHeaders());
+
+        ResponseEntity<Map> resp = rest.postForEntity(
+                config.getBaseUrl() + "/rest/api/3/issue/bulk",
+                req,
+                Map.class
+        );
+
+        if (!resp.getStatusCode().is2xxSuccessful() || resp.getBody() == null) {
+            throw new RuntimeException("Bulk subtask creation failed: " + resp);
+        }
+
+        List<Map<String, Object>> issues =
+                (List<Map<String, Object>>) resp.getBody().get("issues");
+
+        return issues.stream()
+                .map(i -> i.get("key").toString())
+                .toList();
+    }
+
+    /**
      * High-level operation: create a story under the feature and create multiple subtasks under that story.
      * Returns a map containing newStoryKey and createdSubtaskKeys.
      */
@@ -142,11 +187,14 @@ public class JiraService1 {
         // 1) create Jira story
         String storyKey = createStory(featureKey, finalSummary, description);
 
-        // 2) create subtasks under the story
+        /*// 2) create subtasks under the story
         List<String> createdSubtasks = new ArrayList<>();
         for (String t : taskNames) {
             createdSubtasks.add(createSubtask(storyKey, t));
-        }
+        }*/
+
+        // 2) Bulk create subtasks (ONE HTTP CALL)
+        List<String> createdSubtasks = createSubtasksInBulk(storyKey, taskNames);
 
         // 3) store in SAME TABLE as JSON
         storyRecordService.saveStory(featureKey, storyKey, createdSubtasks);
